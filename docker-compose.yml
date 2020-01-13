@@ -1,0 +1,20 @@
+version: '3'
+services:
+  db:
+    image: mongo:4.2.2
+  api:
+    build: .
+    command: python -u app.py
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app/
+    depends_on:
+      - db
+  seed:
+    image: mongo:4.2.2
+    depends_on:
+      - db
+    volumes:
+      - .:/data/
+    command: mongoimport -h db -d nasadb -c neo --type csv --headerline --file /data/nasa.csv
