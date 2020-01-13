@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, send_file, request
 from pymongo import MongoClient
 from bson import Code
@@ -11,7 +12,7 @@ from sklearn.cluster import KMeans
 app = Flask(__name__)
 
 #Connect to Mongo client and DB
-client = MongoClient()
+client = MongoClient('db', 27017)
 db = client.nasadb
 coll = db.neo
 collname = "neo" # Near Earth Objects
@@ -129,8 +130,19 @@ def classify(n_clusters=2):
     normalized_df = (df - df.mean()) / df.std()
     normalized_df = normalized_df.dropna()
 
-    pred = KMeans(n_clusters=n_clusters).fit(normalized_df)
+    pred = KMeans(n_clusters=n_clusters).fit_predict(normalized_df)
+    plt.scatter(df["Mean Anomaly"], df["Eccentricity"], c=pred)
 
-    return "Clusters centers (k=" + str(n_clusters) + ") : " + str(pred.cluster_centers_)
+    img = BytesIO()
+    plt.savefig(img, format="png")
+    img.seek(0)
 
+    return send_file(img, mimetype='image/png')
+
+#    return "Clusters centers (k=" + str(n_clusters) + ") : " + str(pred.cluster_centers_)
+
+
+# Launch the app
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', debug=True)
 
