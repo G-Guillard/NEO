@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+</head>
+
+<body>
+  <h1>Error {{ code }}</h1>
+  {% if code == 404 %}
+    <h2>No "{{ key }}" column in DB.</h2>
+  {% elif code == 400 %}
+    <h2>Bad request (missing parameter ?)</h2>
+  {% endif %}
+</body>
+</html>
