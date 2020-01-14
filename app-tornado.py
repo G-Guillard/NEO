@@ -4,14 +4,15 @@ from tornado.ioloop import IOLoop
 from pymongo import MongoClient
 from bson import Code
 import pandas as pd
-import matplotlib.pyplot as plt
-from io import BytesIO
+from plotly.utils import PlotlyJSONEncoder
+import plotly.graph_objects as go
+import plotly.express as px
+import json
 from sklearn.cluster import KMeans
 
 
 #Connect to Mongo client and DB
-#client = MongoClient('db', 27017)
-client = MongoClient()
+client = MongoClient('db', 27017)
 db = client.nasadb
 coll = db.neo
 collname = "neo" # Near Earth Objects
@@ -58,19 +59,18 @@ class Plot1D(RequestHandler):
         if not feature:
             self.set_status(400)
             return self.render('templates/error-tornado.html', code=400)
+        else:
+            feature = feature.split("/")[0]
         if not feature in get_keys(collname):
             self.set_status(404)
             return self.render('templates/error-tornado.html', code=404, key=feature)
 
         df = get_features(feature)
-        df.hist(feature)
 
-        img = BytesIO()
-        plt.savefig(img, format="png")
-        img.seek(0)
+        fig = go.Figure(data=[go.Histogram(x=df[feature])])
+        graphJSON = json.dumps(fig, cls=PlotlyJSONEncoder)
 
-        self.set_header("Content-Type", "image/png")
-        self.write(img.getvalue())
+        return self.render('templates/plot-tornado.html', plot=json.dumps(graphJSON))
 
 
 class Plot2D(RequestHandler):
@@ -104,14 +104,11 @@ class Plot2D(RequestHandler):
             return self.render('templates/error-tornado.html', code=404, key=feature2)
 
         df = get_features(feature1, feature2)
-        plot = df.plot.scatter(feature2, feature1)
 
-        img = BytesIO()
-        plt.savefig(img, format="png")
-        img.seek(0)
+        fig = px.scatter(df, x=feature1, y=feature2)
+        graphJSON = json.dumps(fig, cls=PlotlyJSONEncoder)
 
-        self.set_header("Content-Type", "image/png")
-        self.write(img.getvalue())
+        return self.render('templates/plot-tornado.html', plot=json.dumps(graphJSON))
 
 
 class KMeansClassifier(RequestHandler):
@@ -148,14 +145,12 @@ class KMeansClassifier(RequestHandler):
         normalized_df = normalized_df.dropna()
 
         pred = KMeans(n_clusters=int(n_clusters)).fit_predict(normalized_df)
-        plt.scatter(df["Mean Anomaly"], df["Eccentricity"], c=pred)
+        df["pred"] = pred
 
-        img = BytesIO()
-        plt.savefig(img, format="png")
-        img.seek(0)
+        fig = px.scatter(df, x="Mean Anomaly", y="Eccentricity", color="pred")
+        graphJSON = json.dumps(fig, cls=PlotlyJSONEncoder)
 
-        self.set_header("Content-Type", "image/png")
-        self.write(img.getvalue())
+        return self.render('templates/plot-tornado.html', plot=json.dumps(graphJSON))
 
 
 # Launch the app
