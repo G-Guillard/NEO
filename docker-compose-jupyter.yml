@@ -1,0 +1,22 @@
+version: '3'
+services:
+  db:
+    image: mongo:4.2.2
+  notebook:
+    build:
+      context: .
+      dockerfile: Dockerfile_Jupyter
+    privileged: true
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app/
+    depends_on:
+      - db
+  seed:
+    image: mongo:4.2.2
+    depends_on:
+      - db
+    volumes:
+      - .:/data/
+    command: mongoimport -h db -d nasadb -c neo --type csv --headerline --file /data/nasa.csv
