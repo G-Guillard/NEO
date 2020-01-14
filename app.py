@@ -22,12 +22,12 @@ def get_keys(collection, numeric=False):
     """Get all documents keys, or only numerical keys"""
 
     if numeric:
-        map = Code("function() { for (var key in this) { if (typeof(this[key]) == 'number') emit(key, null); } }")
+        mapper = Code("function() { for (var key in this) { if (typeof(this[key]) == 'number') emit(key, null); } }")
     else:
-        map = Code("function() { for (var key in this) { emit(key, null); } }")
-    reduce = Code("function(key, stuff) { return null; }")
+        mapper = Code("function() { for (var key in this) { emit(key, null); } }")
+    reducer = Code("function(key, stuff) { return null; }")
 
-    result = db[collection].map_reduce(map, reduce, collection + "_keys")
+    result = db[collection].map_reduce(mapper, reducer, collection + "_keys")
 
     return result.distinct("_id")
 
