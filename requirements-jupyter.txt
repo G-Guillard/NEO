@@ -1,0 +1,6 @@
+pymongo
+numpy
+pandas
+matplotlib
+plotly
+sklearn
