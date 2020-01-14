@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+</head>
+
+<body>
+	<h1>Near Earth Objects</h1>
+	<h2>Base de données astéroïdes et comètes de la NASA</h2>
+
+	<h3>Source des données</h3>
+	<p><a href="https://www.kaggle.com/shrutimehta/nasa-asteroids-classification">Jeu de données Kaggle</a></p>
+
+	<h3>Distributions :</h3>
+	<ul>
+		{% for item in items %}
+	    <li><a href="/plots/1D/{{ item }}">{{ item }}</a></li>
+		{% end %}
+	</ul>
+
+	<h3>Plots 2D :</h3>
+<form action="/plots/2D/" method="POST">
+  <p>/plot2d/<input type="text" name="x"></input>/<input type="text" name="y"></input>/</p>
+  <input type="Submit" value="Plot 2D"></input>
+</form>
+<!--	<p><a href="/plot2d/Inclination/Eccentricity/">/plot2d/&lt;y&gt;/&lt;x&gt;/</a></p>-->
+
+
+	<h3>Classification :</h3>
+	<p><a href="/classify/kmeans/">/classify/kmeans/&lt;n_kernels&gt;/</a> (par défaut, n_kernels=2)</p>
+</body>
+</html>
